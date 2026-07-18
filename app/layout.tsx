@@ -47,13 +47,13 @@ export const metadata: Metadata = {
     title: `${siteConfig.brand.name} — ${siteConfig.brand.tagline}`,
     description:
       "Una selección curada de los productos más deseados del mundo, entregados con un nivel de detalle excepcional.",
-    images: [{ url: siteConfig.brand.logoPath, width: 1200, height: 630, alt: siteConfig.brand.name }],
+    images: [{ url: siteConfig.hero.backgroundImage, width: 1200, height: 630, alt: siteConfig.brand.name }],
   },
   twitter: {
     card: "summary_large_image",
     title: siteConfig.brand.name,
     description: siteConfig.brand.tagline,
-    images: [siteConfig.brand.logoPath],
+    images: [siteConfig.hero.backgroundImage],
   },
   robots: { index: true, follow: true },
   icons: { icon: "/favicon.svg" },

@@ -10,12 +10,6 @@ foco total en percepción de lujo, conversión y velocidad.
 > asegúrate de correr `npm install` de nuevo para que se instale la versión
 > parcheada.
 
-> **Logo:** el archivo real del cliente ya está integrado en
-> `public/logo-original.jpg` y se usa directo en `components/Logo.tsx`
-> (enmarcado como medallón circular). Si quieres ajustar el encuadre (qué
-> tanto se ve del anillo dorado dentro del círculo), cambia el valor
-> `scale-[1.35]` en ese archivo.
-
 ## Cómo correr el proyecto
 
 ```bash
@@ -49,6 +43,19 @@ tiene texto quemado:
 - `data/testimonials.ts` — reseñas.
 - `data/benefits.ts` — barra de confianza/garantías (usa nombres de íconos de
   [lucide-react](https://lucide.dev/icons)).
+
+## Logo real
+
+El logo actual (`public/logo.svg`, `public/favicon.svg`) es una recreación
+vectorial del emblema en bronce cepillado. Para usar el archivo original:
+
+1. Exporta el logo en SVG (ideal) o PNG de alta resolución.
+2. Colócalo en `/public/logo.svg` (o `/public/logo.png`).
+3. Actualiza `siteConfig.brand.logoPath` en `data/site-config.ts` si cambias
+   el nombre del archivo.
+4. En `components/Logo.tsx`, reemplaza el `<svg>` inline por un
+   `<Image src={siteConfig.brand.logoPath} ... />` si prefieres usar el
+   archivo directamente en vez de la recreación vectorial.
 
 ## Conectar Shopify / Stripe / Mercado Pago
 
@@ -89,7 +96,7 @@ MERCADOPAGO_ACCESS_TOKEN=
 /lib          utilidades + capa de abstracción de comercio
 /types        tipos compartidos de TypeScript
 /utils        helpers de catálogo (categorías dinámicas, productos destacados)
-/public       assets estáticos (logo real, favicon)
+/public       assets estáticos (logo, favicon)
 ```
 
 ## Rendimiento y SEO
