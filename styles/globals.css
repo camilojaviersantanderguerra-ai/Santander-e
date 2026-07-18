@@ -1,0 +1,103 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Fraunces", ui-serif, serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+}
+
+* {
+  scroll-behavior: smooth;
+}
+
+html,
+body {
+  background-color: #050506;
+  color: #f2ede3;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: rgba(212, 172, 112, 0.28);
+  color: #fff;
+}
+
+/* Scrollbar de marca, discreto */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #0a0a0c;
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #6e4d26, #b3813f);
+  border-radius: 999px;
+  border: 2px solid #0a0a0c;
+}
+
+/* Utilidad: texto con acabado bronce cepillado animado */
+.text-brushed {
+  background-image: linear-gradient(
+    115deg,
+    #8a6a34 0%,
+    #d9c187 22%,
+    #f4e6bf 38%,
+    #b3813f 52%,
+    #e3c690 68%,
+    #8a6a34 84%,
+    #c19c56 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.text-brushed-animated {
+  animation: shimmer 7s linear infinite;
+}
+
+/* Vidrio muy sutil para tarjetas flotantes */
+.glass-panel {
+  background: linear-gradient(
+    160deg,
+    rgba(255, 255, 255, 0.045),
+    rgba(255, 255, 255, 0.015)
+  );
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  border: 1px solid rgba(212, 172, 112, 0.12);
+}
+
+/* Línea divisoria de marca, casi invisible */
+.hairline {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(212, 172, 112, 0.35),
+    transparent
+  );
+  height: 1px;
+}
+
+.container-brand {
+  width: 100%;
+  max-width: 1400px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .container-brand {
+    padding-left: 3rem;
+    padding-right: 3rem;
+  }
+}
