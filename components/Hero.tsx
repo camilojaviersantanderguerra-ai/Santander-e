@@ -9,7 +9,7 @@ import { Logo } from "./Logo";
 import { ChevronDown } from "lucide-react";
 
 /** Hero de impacto: imagen de fondo con parallax muy suave, headline
- * gigante, y un anillo del logo que "respira" detrás del texto. Este es
+ * gigante, y el emblema de marca "respirando" detrás del texto. Este es
  * el momento que debe generar "esta empresa parece enorme". */
 export function Hero() {
   const ref = useRef<HTMLDivElement>(null);
@@ -35,9 +35,9 @@ export function Hero() {
       <div className="absolute inset-0 bg-graphite-radial" />
       <div className="absolute inset-0 bg-gradient-to-t from-ink-950 via-ink-950/30 to-ink-950/60" />
 
-      {/* Anillo del logo, enorme y tenue, respirando de fondo */}
-      <div className="pointer-events-none absolute left-1/2 top-1/2 h-[70vmin] w-[70vmin] -translate-x-1/2 -translate-y-1/2 animate-floatSlow opacity-[0.07]">
-        <Logo showWordmark={false} className="h-full w-full [&>svg]:h-full [&>svg]:w-full" />
+      {/* Emblema de marca, enorme y tenue, respirando de fondo */}
+      <div className="pointer-events-none absolute left-1/2 top-1/2 h-[55vmin] w-[55vmin] -translate-x-1/2 -translate-y-1/2 animate-floatSlow opacity-[0.12]">
+        <Logo showWordmark={false} size={9999} className="h-full w-full [&>span]:h-full [&>span]:w-full" />
       </div>
 
       <motion.div

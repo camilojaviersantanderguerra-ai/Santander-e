@@ -43,7 +43,7 @@ export function Testimonials() {
                   <Star key={idx} className="h-3.5 w-3.5 fill-bronze-400 text-bronze-400" />
                 ))}
               </div>
-              <p className="flex-1 text-sm leading-relaxed text-white/70">“{t.quote}”</p>
+              <p className="flex-1 text-sm leading-relaxed text-white/70">"{t.quote}"</p>
               <div className="flex items-center justify-between border-t border-white/[0.06] pt-4">
                 <div>
                   <p className="text-sm font-medium text-white/85">{t.name}</p>

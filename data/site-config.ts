@@ -12,7 +12,7 @@ export const siteConfig: SiteConfig = {
   brand: {
     name: "SANTANDER E-SHOPPING",
     tagline: "Objetos diseñados para durar. Experiencias diseñadas para sentirse.",
-    logoPath: "/logo.svg", // reemplazar por el logo real exportado en /public
+    logoPath: "/logo-original.jpg", // logo real del cliente
     logoAlt: "Santander E-Shopping",
   },
   hero: {
