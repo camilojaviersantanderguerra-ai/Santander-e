@@ -49,15 +49,13 @@ export function BuyNowButton({ variants, fallbackProductId }: BuyNowButtonProps)
                 key={v.id}
                 type="button"
                 onClick={() => setSelectedVariantId(v.id)}
-                disabled={!v.inStock}
                 className={`rounded-full border px-4 py-2 text-sm transition-colors duration-300 ${
                   selectedVariantId === v.id
                     ? "border-bronze-400 bg-bronze-400/10 text-bronze-200"
                     : "border-white/15 text-white/60 hover:border-white/30"
-                } ${!v.inStock ? "cursor-not-allowed opacity-40" : ""}`}
+                }`}
               >
                 {v.name}
-                {!v.inStock && " (agotado)"}
               </button>
             ))}
           </div>

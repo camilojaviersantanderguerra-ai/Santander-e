@@ -1,10 +1,9 @@
-import Image from "next/image";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getProductBySlug } from "@/utils/catalog";
 import { formatMoney, discountPercent } from "@/lib/utils";
-import { Badge } from "@/components/ui/Badge";
 import { BuyNowButton } from "@/components/BuyNowButton";
+import { ProductGallery } from "@/components/ProductGallery";
 import { Star, Flame, ShieldCheck, Truck, RotateCcw } from "lucide-react";
 
 interface ProductPageProps {
@@ -39,44 +38,14 @@ export default async function ProductPage({ params }: ProductPageProps) {
   if (!product) notFound();
 
   const discount = discountPercent(product.price, product.compareAtPrice);
-  const gallery = [product.image, ...(product.gallery ?? [])].filter(Boolean);
+  const gallery = [product.image, ...(product.gallery ?? [])].filter(Boolean) as string[];
   const lowStock = (product.stockLevel ?? 99) <= 8 && (product.stockLevel ?? 0) > 0;
 
   return (
     <div className="bg-ink-950 pb-28 pt-32">
       <div className="container-brand grid grid-cols-1 gap-12 lg:grid-cols-2 lg:gap-20">
-        {/* Galería */}
-        <div className="flex flex-col gap-4">
-          <div className="relative aspect-square overflow-hidden rounded-2xl border border-white/[0.06] bg-ink-850">
-            {gallery[0] && (
-              <Image
-                src={gallery[0]}
-                alt={product.name}
-                fill
-                sizes="(max-width: 1024px) 100vw, 50vw"
-                className="object-cover"
-                priority
-              />
-            )}
-            {discount && (
-              <div className="absolute left-4 top-4">
-                <Badge tone="bronze">-{discount}%</Badge>
-              </div>
-            )}
-          </div>
-          {gallery.length > 1 && (
-            <div className="grid grid-cols-4 gap-3">
-              {gallery.slice(1, 5).map((img, i) => (
-                <div
-                  key={i}
-                  className="relative aspect-square overflow-hidden rounded-xl border border-white/[0.06] bg-ink-850"
-                >
-                  <Image src={img} alt={`${product.name} ${i + 2}`} fill sizes="120px" className="object-cover" />
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        {/* Galería (interactiva: clic en miniatura cambia la imagen principal) */}
+        <ProductGallery images={gallery} alt={product.name} discount={discount} />
 
         {/* Info + compra */}
         <div className="flex flex-col justify-center">
