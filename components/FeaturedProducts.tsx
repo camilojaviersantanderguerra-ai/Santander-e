@@ -5,8 +5,8 @@ import { Button } from "./ui/Button";
 
 /** Productos destacados: la arquitectura no asume categorías fijas,
  * simplemente muestra lo marcado como `isFeatured` en /data/products.ts. */
-export function FeaturedProducts() {
-  const featured = getFeaturedProducts(8);
+export async function FeaturedProducts() {
+  const featured = await getFeaturedProducts(8);
 
   return (
     <section className="relative bg-ink-950 py-28 md:py-36">

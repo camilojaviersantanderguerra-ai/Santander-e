@@ -10,6 +10,18 @@ foco total en percepción de lujo, conversión y velocidad.
 > asegúrate de correr `npm install` de nuevo para que se instale la versión
 > parcheada.
 
+> **Logo:** `components/Logo.tsx` dibuja el emblema del fénix en SVG con
+> fondo 100% transparente (dorado/bronce sobre el negro del sitio) — es una
+> recreación vectorial, no la foto original. La foto real del cliente vive en
+> `public/logo-original.jpg` y se usa solo para las imágenes de Open
+> Graph/Twitter/Schema.org (`data/site-config.ts` → `brand.logoPath`), donde
+> el fondo no estorba.
+>
+> Si en algún momento se consigue una versión de la foto real con el fondo
+> ya recortado (PNG con transparencia, vía remove.bg o Photoshop), se puede
+> reemplazar el `<svg>` de `Logo.tsx` por un `<Image src="/logo-cutout.png" />`
+> para usar el logo real también en el header/footer/hero.
+
 ## Cómo correr el proyecto
 
 ```bash
@@ -44,42 +56,58 @@ tiene texto quemado:
 - `data/benefits.ts` — barra de confianza/garantías (usa nombres de íconos de
   [lucide-react](https://lucide.dev/icons)).
 
-## Logo real
-
-El logo actual (`public/logo.svg`, `public/favicon.svg`) es una recreación
-vectorial del emblema en bronce cepillado. Para usar el archivo original:
-
-1. Exporta el logo en SVG (ideal) o PNG de alta resolución.
-2. Colócalo en `/public/logo.svg` (o `/public/logo.png`).
-3. Actualiza `siteConfig.brand.logoPath` en `data/site-config.ts` si cambias
-   el nombre del archivo.
-4. En `components/Logo.tsx`, reemplaza el `<svg>` inline por un
-   `<Image src={siteConfig.brand.logoPath} ... />` si prefieres usar el
-   archivo directamente en vez de la recreación vectorial.
-
 ## Conectar Shopify / Stripe / Mercado Pago
 
 El frontend nunca habla directamente con un proveedor de pagos: todo pasa por
-la interfaz `CommerceProvider` en `lib/commerce/types.ts`. Hoy usa
-`lib/commerce/mock-provider.ts` (datos de `data/products.ts`).
+la interfaz `CommerceProvider` en `lib/commerce/types.ts`.
 
-Para conectar un proveedor real:
+**Shopify ya está conectado** (`lib/commerce/shopify-provider.ts`, canal
+Headless vía Storefront API). Las credenciales viven en `.env.local`
+(excluido de Git):
 
-1. Crea `lib/commerce/shopify-provider.ts` (o `stripe-provider.ts` /
-   `mercadopago-provider.ts`) implementando `CommerceProvider`.
-2. Cambia una sola línea en `lib/commerce/index.ts`:
-   ```ts
-   export const commerce: CommerceProvider = shopifyProvider;
-   ```
+```
+SHOPIFY_STORE_DOMAIN=c8jcre-vc.myshopify.com
+SHOPIFY_STOREFRONT_TOKEN=shpat_xxxxxxxx   (token privado, solo servidor)
+SHOPIFY_API_VERSION=2026-04
+```
+
+`lib/commerce/index.ts` ya exporta `shopifyProvider` como `commerce`, y **todo
+el sitio ya está conectado en vivo**:
+
+- El homepage (`FeaturedProducts`), `/tienda` (catálogo completo con filtro
+  por categoría) y `/producto/[slug]` (detalle) leen productos reales desde
+  Shopify a través de `utils/catalog.ts`. Si Shopify no devuelve nada (tienda
+  vacía o error de red), hay un fallback silencioso a `data/products.ts` para
+  que el sitio nunca se vea roto ni vacío.
+- El botón **"Comprar ahora"** en cada producto (`components/BuyNowButton.tsx`)
+  crea un carrito real en Shopify (`lib/actions/checkout.ts`, Server Action) y
+  redirige al checkout real de Shopify — el pago se procesa 100% en la
+  infraestructura de Shopify (Shopify Payments), no hay lógica de pago propia
+  que mantener.
+- Si un producto tiene más de una variante (ej. "2x1" vs "2x1+estuches"), el
+  botón muestra un selector simple antes de comprar.
+
+Antes de dar por bueno el flujo de pago en producción: haz una compra de
+prueba de punta a punta (o revisa en Shopify → Configuración → Pagos que
+Shopify Payments esté realmente activo y verificado), para confirmar que el
+dinero efectivamente se procesa.
+
+Cuando quieras desplegar en Vercel, agrega esas mismas variables en
+**Project Settings → Environment Variables** (el `.env.local` solo funciona
+en tu máquina, no viaja con el deploy).
+
+Para conectar Stripe o Mercado Pago más adelante (pagos directos sin pasar
+por el checkout de Shopify):
+
+1. Crea `lib/commerce/stripe-provider.ts` o `mercadopago-provider.ts`
+   implementando `CommerceProvider`, igual que `shopify-provider.ts`.
+2. Cambia una línea en `lib/commerce/index.ts`.
 3. Ningún componente cambia — todos consumen `commerce.listProducts()`,
    `commerce.createCart()`, etc.
 
-Variables de entorno recomendadas (crear `.env.local`, no incluido por
-seguridad):
+Variables de entorno adicionales si se conectan esos proveedores:
 
 ```
-SHOPIFY_STORE_DOMAIN=
-SHOPIFY_STOREFRONT_TOKEN=
 STRIPE_SECRET_KEY=
 STRIPE_PUBLISHABLE_KEY=
 MERCADOPAGO_ACCESS_TOKEN=
@@ -96,7 +124,7 @@ MERCADOPAGO_ACCESS_TOKEN=
 /lib          utilidades + capa de abstracción de comercio
 /types        tipos compartidos de TypeScript
 /utils        helpers de catálogo (categorías dinámicas, productos destacados)
-/public       assets estáticos (logo, favicon)
+/public       assets estáticos (logo real, favicon)
 ```
 
 ## Rendimiento y SEO

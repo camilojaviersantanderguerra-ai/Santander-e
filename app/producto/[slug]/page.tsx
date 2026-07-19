@@ -1,0 +1,142 @@
+import Image from "next/image";
+import { notFound } from "next/navigation";
+import type { Metadata } from "next";
+import { getProductBySlug } from "@/utils/catalog";
+import { formatMoney, discountPercent } from "@/lib/utils";
+import { Badge } from "@/components/ui/Badge";
+import { BuyNowButton } from "@/components/BuyNowButton";
+import { Star, Flame, ShieldCheck, Truck, RotateCcw } from "lucide-react";
+
+interface ProductPageProps {
+  params: Promise<{ slug: string }>;
+}
+
+// Metadata dinámica por producto: cada página de producto tiene su propio
+// título/descripción/OG para SEO y para que se vea bien al compartir en redes.
+export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const product = await getProductBySlug(slug);
+  if (!product) return { title: "Producto no encontrado" };
+
+  return {
+    title: product.name,
+    description: product.shortDescription,
+    openGraph: {
+      title: product.name,
+      description: product.shortDescription,
+      images: product.image ? [{ url: product.image }] : undefined,
+    },
+  };
+}
+
+/** Página de detalle de producto. Server Component: obtiene el producto
+ * real de Shopify (o demo como fallback) y renderiza todo en el servidor;
+ * solo el botón de compra es interactivo (BuyNowButton, "use client"). */
+export default async function ProductPage({ params }: ProductPageProps) {
+  const { slug } = await params;
+  const product = await getProductBySlug(slug);
+
+  if (!product) notFound();
+
+  const discount = discountPercent(product.price, product.compareAtPrice);
+  const gallery = [product.image, ...(product.gallery ?? [])].filter(Boolean);
+  const lowStock = (product.stockLevel ?? 99) <= 8 && (product.stockLevel ?? 0) > 0;
+
+  return (
+    <div className="bg-ink-950 pb-28 pt-32">
+      <div className="container-brand grid grid-cols-1 gap-12 lg:grid-cols-2 lg:gap-20">
+        {/* Galería */}
+        <div className="flex flex-col gap-4">
+          <div className="relative aspect-square overflow-hidden rounded-2xl border border-white/[0.06] bg-ink-850">
+            {gallery[0] && (
+              <Image
+                src={gallery[0]}
+                alt={product.name}
+                fill
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                className="object-cover"
+                priority
+              />
+            )}
+            {discount && (
+              <div className="absolute left-4 top-4">
+                <Badge tone="bronze">-{discount}%</Badge>
+              </div>
+            )}
+          </div>
+          {gallery.length > 1 && (
+            <div className="grid grid-cols-4 gap-3">
+              {gallery.slice(1, 5).map((img, i) => (
+                <div
+                  key={i}
+                  className="relative aspect-square overflow-hidden rounded-xl border border-white/[0.06] bg-ink-850"
+                >
+                  <Image src={img} alt={`${product.name} ${i + 2}`} fill sizes="120px" className="object-cover" />
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Info + compra */}
+        <div className="flex flex-col justify-center">
+          <span className="text-[11px] uppercase tracking-widest2 text-bronze-300/70">
+            {product.category}
+          </span>
+          <h1 className="mt-4 font-display text-3xl leading-tight text-white md:text-4xl">
+            {product.name}
+          </h1>
+
+          <div className="mt-4 flex items-center gap-4">
+            {product.rating && (
+              <div className="flex items-center gap-1 text-sm text-white/60">
+                <Star className="h-4 w-4 fill-bronze-400 text-bronze-400" />
+                {product.rating} {product.reviewCount ? `(${product.reviewCount} reseñas)` : ""}
+              </div>
+            )}
+            {lowStock && (
+              <div className="flex items-center gap-1.5 text-sm text-bronze-300">
+                <Flame className="h-4 w-4" />
+                Quedan {product.stockLevel} unidades
+              </div>
+            )}
+          </div>
+
+          <div className="mt-6 flex items-baseline gap-3">
+            <span className="text-brushed font-display text-4xl font-semibold">
+              {formatMoney(product.price)}
+            </span>
+            {product.compareAtPrice && (
+              <span className="text-lg text-white/30 line-through">
+                {formatMoney(product.compareAtPrice)}
+              </span>
+            )}
+          </div>
+
+          <p className="mt-6 max-w-md text-base leading-relaxed text-white/55">
+            {product.description || product.shortDescription}
+          </p>
+
+          <div className="mt-10">
+            <BuyNowButton variants={product.variants ?? []} fallbackProductId={product.id} />
+          </div>
+
+          <div className="mt-10 grid grid-cols-1 gap-4 border-t border-white/[0.06] pt-8 sm:grid-cols-3">
+            <div className="flex items-center gap-2 text-xs text-white/50">
+              <Truck className="h-4 w-4 text-bronze-400" />
+              Envío rápido en Santiago
+            </div>
+            <div className="flex items-center gap-2 text-xs text-white/50">
+              <ShieldCheck className="h-4 w-4 text-bronze-400" />
+              Pago 100% seguro
+            </div>
+            <div className="flex items-center gap-2 text-xs text-white/50">
+              <RotateCcw className="h-4 w-4 text-bronze-400" />
+              Devolución fácil
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

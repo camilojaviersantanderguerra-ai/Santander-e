@@ -4,23 +4,33 @@ import { cn } from "@/lib/utils";
 interface LogoProps {
   className?: string;
   showWordmark?: boolean;
+  size?: number;
+  /** Si es true, el ícono llena el 100% de su contenedor (ignora `size`). */
+  fill?: boolean;
 }
 
 /**
- * Recreación vectorial del emblema (fénix en bronce cepillado, anillo doble
- * y placa dorada con el wordmark). Es una interpretación en SVG inspirada en
- * el logo original en 3D/foto-realista — no un calco pixel-perfecto, porque
- * ese nivel de detalle (metal cepillado, textura de fondo, iluminación)
- * requiere el archivo raster original.
+ * Emblema del fénix en dorado/bronce, dibujado en SVG con fondo 100%
+ * transparente (sin recuadro gris) — pensado para "flotar" sobre el fondo
+ * negro grafito del sitio.
  *
- * Si consigues subir el archivo real (PNG/SVG exportado), colócalo en
- * /public/logo.png (o .svg) y reemplaza el <svg> de abajo por:
- *   <Image src={siteConfig.brand.logoPath} width={40} height={40} alt={siteConfig.brand.logoAlt} />
+ * Es una interpretación vectorial inspirada en el logo real del cliente
+ * (public/logo-original.jpg), no un recorte de esa foto: para lograr
+ * transparencia real a partir de la foto original se necesita una
+ * herramienta de remoción de fondo (remove.bg, Photoshop, etc.) que no
+ * está disponible en este entorno. Si en algún momento se consigue esa
+ * versión ya recortada en PNG con transparencia, se puede reemplazar este
+ * SVG por un <Image src="/logo-cutout.png" .../> sin tocar nada más.
  */
-export function Logo({ className, showWordmark = true }: LogoProps) {
+export function Logo({ className, showWordmark = true, size = 40, fill = false }: LogoProps) {
   return (
     <div className={cn("flex items-center gap-3", className)}>
-      <svg viewBox="0 0 120 120" className="h-9 w-9 shrink-0" aria-label={siteConfig.brand.logoAlt}>
+      <svg
+        viewBox="0 0 120 120"
+        style={fill ? undefined : { width: size, height: size }}
+        className={fill ? "h-full w-full shrink-0" : "shrink-0"}
+        aria-label={siteConfig.brand.logoAlt}
+      >
         <defs>
           <linearGradient id="brushedGoldLogo" x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stopColor="#8a6a34" />
@@ -39,7 +49,7 @@ export function Logo({ className, showWordmark = true }: LogoProps) {
           </linearGradient>
         </defs>
 
-        {/* Anillo doble */}
+        {/* Anillo doble, sin ningún fondo detrás */}
         <circle cx="60" cy="60" r="55" fill="none" stroke="url(#brushedGoldLogo)" strokeWidth="1.4" opacity="0.6" />
         <circle cx="60" cy="60" r="49" fill="none" stroke="url(#brushedGoldLogo)" strokeWidth="1" opacity="0.4" />
 
@@ -49,7 +59,7 @@ export function Logo({ className, showWordmark = true }: LogoProps) {
           fill="url(#brushedBronzeLogo)"
         />
 
-        {/* Ala derecha: tres plumas superpuestas tipo llama */}
+        {/* Ala derecha */}
         <g>
           <path d="M60 52 C68 42 78 38 88 40 C80 50 72 56 64 58 Z" fill="url(#brushedBronzeLogo)" opacity="0.95" />
           <path d="M60 56 C70 48 82 46 94 50 C84 60 74 64 64 63 Z" fill="url(#brushedBronzeLogo)" />

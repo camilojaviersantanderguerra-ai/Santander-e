@@ -16,6 +16,10 @@ export interface ProductVariant {
   id: string;
   name: string;
   priceModifier?: number;
+  /** Precio absoluto de la variante (Shopify permite precios distintos por
+   * variante, no solo un modificador sobre el precio base). Si está presente,
+   * tiene prioridad sobre `priceModifier`. */
+  price?: Money;
   inStock: boolean;
 }
 

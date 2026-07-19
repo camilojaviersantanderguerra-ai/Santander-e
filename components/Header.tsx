@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, Search, ShoppingBag } from "lucide-react";
 import { Logo } from "./Logo";
-import { getAllCategoryNames } from "@/utils/catalog";
 
 const navLinks = [
   { label: "Colección", href: "/tienda" },
@@ -13,12 +12,18 @@ const navLinks = [
   { label: "Historia", href: "#historia" },
 ];
 
+interface HeaderProps {
+  /** Categorías dinámicas del catálogo real, calculadas server-side en
+   * app/layout.tsx (este componente es "use client", no puede hacer fetch
+   * async por su cuenta) y pasadas aquí como prop. */
+  categories?: string[];
+}
+
 /** Header flotante con fondo que se solidifica al hacer scroll. Mobile-first:
  * el menú completo colapsa a un panel de pantalla completa en móvil. */
-export function Header() {
+export function Header({ categories = [] }: HeaderProps) {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const categories = getAllCategoryNames();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
