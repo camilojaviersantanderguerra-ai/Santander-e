@@ -35,6 +35,11 @@ export interface Product {
   name: string;
   shortDescription: string;
   description: string;
+  /** Versión con formato (HTML) de la descripción — permite listas de
+   * especificaciones legibles en la ficha de producto. El texto plano en
+   * `description` se sigue usando para el meta description / SEO, donde
+   * las etiquetas HTML no sirven. */
+  descriptionHtml?: string;
   price: Money;
   compareAtPrice?: Money;
   category: string;
