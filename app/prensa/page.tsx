@@ -7,6 +7,7 @@ import { siteConfig } from "@/data/site-config";
 export const metadata: Metadata = {
   title: "Prensa",
   description: "Información de contacto para consultas de prensa y medios.",
+  alternates: { canonical: "/prensa" },
 };
 
 export default function PrensaPage() {

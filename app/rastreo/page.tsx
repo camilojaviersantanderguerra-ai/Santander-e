@@ -7,6 +7,7 @@ import { siteConfig } from "@/data/site-config";
 export const metadata: Metadata = {
   title: "Rastrear pedido",
   description: "Cómo hacer seguimiento a tu pedido de Santander E-Shopping.",
+  alternates: { canonical: "/rastreo" },
 };
 
 export default function RastreoPage() {

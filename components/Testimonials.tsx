@@ -22,6 +22,8 @@ export function Testimonials() {
           ))}
         </AnimatedSection>
 
+        {testimonials.length > 0 && (
+        <>
         <AnimatedSection className="mb-14 text-center">
           <span className="text-[11px] uppercase tracking-widest3 text-bronze-300/70">
             Lo que dicen quienes ya compraron
@@ -59,6 +61,8 @@ export function Testimonials() {
             </AnimatedSection>
           ))}
         </div>
+        </>
+        )}
       </div>
     </section>
   );

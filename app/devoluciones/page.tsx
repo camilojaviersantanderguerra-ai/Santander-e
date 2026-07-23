@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   title: "Devoluciones",
   description:
     "Política de devoluciones de Santander E-Shopping: 30 días para cambiar de opinión, sin preguntas incómodas.",
+  alternates: { canonical: "/devoluciones" },
 };
 
 const steps = [

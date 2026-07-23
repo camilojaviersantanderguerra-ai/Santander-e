@@ -21,7 +21,7 @@ import type { Product } from "@/types";
 // demostración mientras la otra sí mostraba datos reales. `cache()` hace que
 // todas las llamadas dentro de una misma carga de página reutilicen el
 // mismo resultado — una sola petición real a Shopify por carga de página.
-const getAllProducts = cache(async (): Promise<Product[]> => {
+export const getAllProducts = cache(async (): Promise<Product[]> => {
   try {
     const liveProducts = await commerce.listProducts();
     return liveProducts.length > 0 ? liveProducts : demoProducts;

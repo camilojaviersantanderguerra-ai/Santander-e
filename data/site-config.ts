@@ -42,10 +42,15 @@ export const siteConfig: SiteConfig = {
     cta: "Unirme",
     disclaimer: "Al suscribirte aceptas nuestra política de privacidad. Cancela cuando quieras.",
   },
+  // Antes estos 3 valores eran cifras inventadas ("128,000+ clientes en 14
+  // países", "4.9/5 calificación verificada") sin ningún respaldo real —
+  // publicidad engañosa verificable. Se reemplazan por compromisos reales
+  // y verificables hoy mismo (política real de pago/envío/devolución),
+  // sin inventar números de clientes o reseñas que todavía no existen.
   socialProof: {
-    stat1: { value: "128,000+", label: "clientes en 14 países" },
-    stat2: { value: "4.9/5", label: "calificación verificada" },
-    stat3: { value: "48h", label: "envío express promedio" },
+    stat1: { value: "100%", label: "pago seguro y encriptado" },
+    stat2: { value: "30 días", label: "para devolución sin preguntas" },
+    stat3: { value: "Chile", label: "envío a todo el país" },
   },
   footer: {
     description:

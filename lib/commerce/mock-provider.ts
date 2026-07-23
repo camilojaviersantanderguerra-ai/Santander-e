@@ -34,6 +34,18 @@ export const mockProvider: CommerceProvider = {
     return mockCart;
   },
 
+  async getCart() {
+    return mockCart;
+  },
+
+  async updateCartLine() {
+    return mockCart;
+  },
+
+  async removeCartLine() {
+    return mockCart;
+  },
+
   async createCheckout() {
     // En producción esto devolverá la URL real de checkout de Shopify/Stripe/Mercado Pago.
     return { url: "/checkout" };

@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: "Sostenibilidad",
   description:
     "Nuestro compromiso con hacer las cosas mejor: menos desperdicio, decisiones más conscientes.",
+  alternates: { canonical: "/sostenibilidad" },
 };
 
 const commitments = [

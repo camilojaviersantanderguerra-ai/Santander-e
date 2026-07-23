@@ -11,7 +11,7 @@
 // solo se importa desde Server Components / código que corre en el servidor.
 
 import type { Product, Money, ProductVariant } from "@/types";
-import type { CommerceProvider, Cart, CartLine } from "./types";
+import type { CommerceProvider, Cart, CartLine, CartLineDisplay } from "./types";
 
 const domain = process.env.SHOPIFY_STORE_DOMAIN;
 const token = process.env.SHOPIFY_STOREFRONT_TOKEN;
@@ -70,6 +70,18 @@ function toMoney(amount: string, currencyCode: string): Money {
   return { amount: parseFloat(amount), currency: currencyCode as Money["currency"] };
 }
 
+// Antes se cortaba la descripción con `.slice(0, 140)` a secas, lo que
+// partía la frase a media palabra (ej. "...control por micro" en vez de
+// "...control por microprocesador"). Esto se veía roto en el snippet de
+// Google y en las previsualizaciones de WhatsApp/redes sociales. Ahora se
+// corta en el último espacio antes del límite y se agrega "…".
+function truncateAtWord(text: string, maxLength: number): string {
+  if (text.length <= maxLength) return text;
+  const cut = text.slice(0, maxLength);
+  const lastSpace = cut.lastIndexOf(" ");
+  return `${cut.slice(0, lastSpace > 0 ? lastSpace : maxLength).trimEnd()}…`;
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapShopifyProduct(node: any): Product {
   const price = toMoney(
@@ -100,7 +112,7 @@ function mapShopifyProduct(node: any): Product {
     id: node.id,
     slug: node.handle,
     name: node.title,
-    shortDescription: node.description?.slice(0, 140) ?? "",
+    shortDescription: node.description ? truncateAtWord(node.description, 150) : "",
     description: node.description ?? "",
     price,
     compareAtPrice: compareAt && compareAt.amount > price.amount ? compareAt : undefined,
@@ -114,6 +126,67 @@ function mapShopifyProduct(node: any): Product {
     isFeatured: (node.tags ?? []).includes("destacado"),
     isNew: (node.tags ?? []).includes("nuevo"),
     stockLevel: node.totalInventory ?? undefined,
+  };
+}
+
+// Fragmento reutilizado por createCart/addToCart/getCart/updateCartLine/
+// removeCartLine: siempre devolvemos el carrito completo con líneas
+// "enriquecidas" (nombre, imagen, precio) para que el CartDrawer no tenga
+// que hacer una consulta aparte por cada producto.
+const CART_FIELDS = `
+  id
+  checkoutUrl
+  totalQuantity
+  cost {
+    subtotalAmount { amount currencyCode }
+  }
+  lines(first: 50) {
+    edges {
+      node {
+        id
+        quantity
+        cost { totalAmount { amount currencyCode } }
+        merchandise {
+          ... on ProductVariant {
+            id
+            title
+            price { amount currencyCode }
+            product {
+              title
+              handle
+              featuredImage { url }
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function mapCart(node: any): Cart {
+  const lines = (node.lines?.edges ?? []).map((e: any) => e.node);
+  const linesDisplay = lines.map((l: any) => ({
+    lineId: l.id,
+    variantId: l.merchandise.id,
+    productTitle: l.merchandise.product.title,
+    variantTitle:
+      l.merchandise.title && l.merchandise.title !== "Default Title" ? l.merchandise.title : undefined,
+    image: l.merchandise.product.featuredImage?.url,
+    slug: l.merchandise.product.handle,
+    quantity: l.quantity,
+    unitPrice: toMoney(l.merchandise.price.amount, l.merchandise.price.currencyCode),
+    lineTotal: toMoney(l.cost.totalAmount.amount, l.cost.totalAmount.currencyCode),
+  }));
+
+  return {
+    id: node.id,
+    lines: linesDisplay.map((l: CartLineDisplay) => ({ variantId: l.variantId, productId: "", quantity: l.quantity })),
+    linesDisplay,
+    subtotalCents: Math.round(parseFloat(node.cost.subtotalAmount.amount) * 100),
+    currency: node.cost.subtotalAmount.currencyCode,
+    checkoutUrl: node.checkoutUrl,
+    totalQuantity: node.totalQuantity ?? linesDisplay.reduce((sum: number, l: CartLineDisplay) => sum + l.quantity, 0),
   };
 }
 
@@ -173,40 +246,27 @@ export const shopifyProvider: CommerceProvider = {
   },
 
   async createCart() {
-    const data = await shopifyFetch<{ cartCreate: { cart: { id: string; checkoutUrl: string } } }>(
+    const data = await shopifyFetch<{ cartCreate: { cart: unknown } }>(
       `mutation CartCreate {
         cartCreate {
-          cart { id checkoutUrl }
+          cart { ${CART_FIELDS} }
         }
       }`
     );
-    const cart = data.cartCreate.cart;
-    return {
-      id: cart.id,
-      lines: [],
-      subtotalCents: 0,
-      currency: "USD",
-      checkoutUrl: cart.checkoutUrl,
-    };
+    return mapCart(data.cartCreate.cart);
   },
 
+  // Antes esto devolvía SOLO la línea que se acababa de agregar (`lines:
+  // [line]`), nunca el carrito completo — imposible construir un carrito
+  // real con varios productos distintos a partir de eso. Ahora
+  // `cartLinesAdd` fusiona automáticamente si la variante ya estaba en el
+  // carrito (comportamiento nativo de Shopify) y devolvemos el carrito
+  // COMPLETO con todas sus líneas.
   async addToCart(cartId: string, line: CartLine) {
-    const data = await shopifyFetch<{
-      cartLinesAdd: {
-        cart: {
-          id: string;
-          checkoutUrl: string;
-          cost: { subtotalAmount: { amount: string; currencyCode: string } };
-        };
-      };
-    }>(
+    const data = await shopifyFetch<{ cartLinesAdd: { cart: unknown } }>(
       `mutation CartLinesAdd($cartId: ID!, $lines: [CartLineInput!]!) {
         cartLinesAdd(cartId: $cartId, lines: $lines) {
-          cart {
-            id
-            checkoutUrl
-            cost { subtotalAmount { amount currencyCode } }
-          }
+          cart { ${CART_FIELDS} }
         }
       }`,
       {
@@ -214,14 +274,44 @@ export const shopifyProvider: CommerceProvider = {
         lines: [{ merchandiseId: line.variantId ?? line.productId, quantity: line.quantity }],
       }
     );
-    const cart = data.cartLinesAdd.cart;
-    return {
-      id: cart.id,
-      lines: [line],
-      subtotalCents: Math.round(parseFloat(cart.cost.subtotalAmount.amount) * 100),
-      currency: cart.cost.subtotalAmount.currencyCode,
-      checkoutUrl: cart.checkoutUrl,
-    };
+    return mapCart(data.cartLinesAdd.cart);
+  },
+
+  async getCart(cartId: string) {
+    const data = await shopifyFetch<{ cart: unknown | null }>(
+      `query GetCart($id: ID!) {
+        cart(id: $id) { ${CART_FIELDS} }
+      }`,
+      { id: cartId }
+    );
+    return data.cart ? mapCart(data.cart) : null;
+  },
+
+  async updateCartLine(cartId: string, lineId: string, quantity: number) {
+    if (quantity <= 0) {
+      return shopifyProvider.removeCartLine(cartId, lineId);
+    }
+    const data = await shopifyFetch<{ cartLinesUpdate: { cart: unknown } }>(
+      `mutation CartLinesUpdate($cartId: ID!, $lines: [CartLineUpdateInput!]!) {
+        cartLinesUpdate(cartId: $cartId, lines: $lines) {
+          cart { ${CART_FIELDS} }
+        }
+      }`,
+      { cartId, lines: [{ id: lineId, quantity }] }
+    );
+    return mapCart(data.cartLinesUpdate.cart);
+  },
+
+  async removeCartLine(cartId: string, lineId: string) {
+    const data = await shopifyFetch<{ cartLinesRemove: { cart: unknown } }>(
+      `mutation CartLinesRemove($cartId: ID!, $lineIds: [ID!]!) {
+        cartLinesRemove(cartId: $cartId, lineIds: $lineIds) {
+          cart { ${CART_FIELDS} }
+        }
+      }`,
+      { cartId, lineIds: [lineId] }
+    );
+    return mapCart(data.cartLinesRemove.cart);
   },
 
   async createCheckout(cartId: string) {

@@ -1,15 +1,25 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, Search, ShoppingBag } from "lucide-react";
 import { Logo } from "./Logo";
+import { useCart } from "./CartProvider";
 
+// Antes "Categorías" y "Santander Privé" usaban anclas relativas
+// ("#categorias", "#premium") que solo funcionan si ya estás en el home —
+// al hacer clic desde /tienda o una ficha de producto, la URL cambiaba
+// pero no pasaba nada. Con "/" al inicio, el navegador siempre va primero
+// al home y de ahí salta al ancla. "Historia" apuntaba a "#historia", un
+// ancla que no existe en ninguna sección de la página (bug distinto,
+// no solo de navegación entre páginas) — se cambió a la página real
+// "Nuestra historia" (/nosotros), que sí existe.
 const navLinks = [
   { label: "Colección", href: "/tienda" },
-  { label: "Categorías", href: "#categorias" },
-  { label: "Santander Privé", href: "#premium" },
-  { label: "Historia", href: "#historia" },
+  { label: "Categorías", href: "/#categorias" },
+  { label: "Santander Privé", href: "/#premium" },
+  { label: "Historia", href: "/nosotros" },
 ];
 
 interface HeaderProps {
@@ -24,6 +34,11 @@ interface HeaderProps {
 export function Header({ categories = [] }: HeaderProps) {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const router = useRouter();
+  const { totalQuantity, openCart } = useCart();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
@@ -31,6 +46,18 @@ export function Header({ categories = [] }: HeaderProps) {
     onScroll();
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  useEffect(() => {
+    if (searchOpen) searchInputRef.current?.focus();
+  }, [searchOpen]);
+
+  function handleSearchSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const trimmed = query.trim();
+    if (!trimmed) return;
+    router.push(`/tienda?buscar=${encodeURIComponent(trimmed)}`);
+    setSearchOpen(false);
+  }
 
   return (
     <header
@@ -56,17 +83,46 @@ export function Header({ categories = [] }: HeaderProps) {
         </nav>
 
         <div className="flex items-center gap-4">
+          <AnimatePresence>
+            {searchOpen && (
+              <motion.form
+                initial={{ width: 0, opacity: 0 }}
+                animate={{ width: 200, opacity: 1 }}
+                exit={{ width: 0, opacity: 0 }}
+                transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                onSubmit={handleSearchSubmit}
+                className="hidden overflow-hidden sm:block"
+              >
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  onBlur={() => !query && setSearchOpen(false)}
+                  placeholder="Buscar productos..."
+                  className="w-full rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm text-white placeholder:text-white/40 focus:border-bronze-400/50 focus:outline-none"
+                />
+              </motion.form>
+            )}
+          </AnimatePresence>
           <button
             aria-label="Buscar"
+            onClick={() => setSearchOpen((v) => !v)}
             className="hidden h-10 w-10 items-center justify-center rounded-full text-white/70 transition-colors duration-300 hover:bg-white/5 hover:text-bronze-200 sm:flex"
           >
             <Search className="h-[18px] w-[18px]" />
           </button>
           <button
             aria-label="Carrito"
-            className="relative hidden h-10 w-10 items-center justify-center rounded-full text-white/70 transition-colors duration-300 hover:bg-white/5 hover:text-bronze-200 sm:flex"
+            onClick={openCart}
+            className="relative flex h-10 w-10 items-center justify-center rounded-full text-white/70 transition-colors duration-300 hover:bg-white/5 hover:text-bronze-200"
           >
             <ShoppingBag className="h-[18px] w-[18px]" />
+            {totalQuantity > 0 && (
+              <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-bronze-400 text-[10px] font-semibold text-ink-950">
+                {totalQuantity}
+              </span>
+            )}
           </button>
           <button
             aria-label="Abrir menú"
@@ -98,6 +154,21 @@ export function Header({ categories = [] }: HeaderProps) {
               </button>
             </div>
             <div className="container-brand flex flex-1 flex-col justify-center gap-8 pb-24">
+              <form
+                onSubmit={(e) => {
+                  handleSearchSubmit(e);
+                  setMenuOpen(false);
+                }}
+                className="sm:hidden"
+              >
+                <input
+                  type="text"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Buscar productos..."
+                  className="w-full rounded-full border border-white/15 bg-white/5 px-4 py-3 text-base text-white placeholder:text-white/40 focus:border-bronze-400/50 focus:outline-none"
+                />
+              </form>
               {navLinks.map((link, i) => (
                 <motion.a
                   key={link.href}

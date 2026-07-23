@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   title: "Envíos y entregas",
   description:
     "Todo lo que necesitas saber sobre el envío de tu pedido en Santander E-Shopping: costos, tiempos y cobertura.",
+  alternates: { canonical: "/envios" },
 };
 
 const items = [

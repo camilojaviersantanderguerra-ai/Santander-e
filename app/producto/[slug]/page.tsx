@@ -20,6 +20,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   return {
     title: product.name,
     description: product.shortDescription,
+    alternates: { canonical: `/producto/${slug}` },
     openGraph: {
       title: product.name,
       description: product.shortDescription,
@@ -39,7 +40,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   const discount = discountPercent(product.price, product.compareAtPrice);
   const gallery = [product.image, ...(product.gallery ?? [])].filter(Boolean) as string[];
-  const lowStock = (product.stockLevel ?? 99) <= 8 && (product.stockLevel ?? 0) > 0;
+  const outOfStock =
+    product.stockLevel === 0 ||
+    (product.variants && product.variants.length > 0 && product.variants.every((v) => !v.inStock));
+  const lowStock = !outOfStock && (product.stockLevel ?? 99) <= 8 && (product.stockLevel ?? 0) > 0;
 
   return (
     <div className="bg-ink-950 pb-28 pt-32">
@@ -69,6 +73,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 Quedan {product.stockLevel} unidades
               </div>
             )}
+            {outOfStock && (
+              <div className="rounded-full border border-white/15 bg-white/[0.03] px-3 py-1 text-xs uppercase tracking-widest2 text-white/60">
+                Agotado
+              </div>
+            )}
           </div>
 
           <div className="mt-6 flex items-baseline gap-3">
@@ -87,21 +96,25 @@ export default async function ProductPage({ params }: ProductPageProps) {
           </p>
 
           <div className="mt-10">
-            <BuyNowButton variants={product.variants ?? []} fallbackProductId={product.id} />
+            <BuyNowButton
+              variants={product.variants ?? []}
+              fallbackProductId={product.id}
+              outOfStock={outOfStock}
+            />
           </div>
 
           <div className="mt-10 grid grid-cols-1 gap-4 border-t border-white/[0.06] pt-8 sm:grid-cols-3">
             <div className="flex items-center gap-2 text-xs text-white/50">
               <Truck className="h-4 w-4 text-bronze-400" />
-              Envío rápido en Santiago
+              Envío a todo Chile
             </div>
             <div className="flex items-center gap-2 text-xs text-white/50">
               <ShieldCheck className="h-4 w-4 text-bronze-400" />
-              Pago 100% seguro
+              Garantía de satisfacción
             </div>
             <div className="flex items-center gap-2 text-xs text-white/50">
               <RotateCcw className="h-4 w-4 text-bronze-400" />
-              Devolución fácil
+              Devolución fácil (30 días)
             </div>
           </div>
         </div>

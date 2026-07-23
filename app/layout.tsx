@@ -3,8 +3,11 @@ import { Inter, Fraunces, JetBrains_Mono } from "next/font/google";
 import "@/styles/globals.css";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { CartProvider } from "@/components/CartProvider";
+import { CartDrawer } from "@/components/CartDrawer";
 import { siteConfig } from "@/data/site-config";
 import { getAllCategoryNames } from "@/utils/catalog";
+import { getCurrentCart } from "@/lib/actions/cart";
 
 // Carga de fuentes optimizada por next/font (self-hosted, sin bloqueo de render).
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans", display: "swap" });
@@ -39,10 +42,18 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: siteConfig.brand.name }],
   creator: siteConfig.brand.name,
-  alternates: { canonical: "/" },
+  // NOTA: el canonical NO se fija aquí a nivel global — cada página define el
+  // suyo propio (ver `alternates: { canonical: ... }` en cada page.tsx). Antes
+  // había un canonical fijo a "/" en este layout raíz, y como Next.js hereda
+  // metadata del layout a menos que la página la sobreescriba, TODAS las
+  // páginas (incluidas fichas de producto y /tienda) declaraban su canonical
+  // como el home — Google las trataba como "duplicado del home" y no las
+  // indexaba por separado. Bug crítico de SEO, corregido.
   openGraph: {
     type: "website",
-    locale: "es_MX",
+    // Antes decía "es_MX" (español de México) en una tienda que solo vende
+    // y despacha en Chile — corregido a "es_CL".
+    locale: "es_CL",
     url: siteUrl,
     siteName: siteConfig.brand.name,
     title: `${siteConfig.brand.name} — ${siteConfig.brand.tagline}`,
@@ -68,6 +79,11 @@ export const viewport: Viewport = {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const categories = await getAllCategoryNames();
+  // Carrito real: se obtiene server-side a partir de la cookie (si existe)
+  // para hidratar el CartProvider con el estado verdadero desde el primer
+  // render — así el ícono del carrito no parpadea en 0 al recargar la
+  // página con productos ya agregados.
+  const initialCart = await getCurrentCart().catch(() => null);
 
   // Schema.org (Organization) — ayuda a Google a entender la marca desde el día uno.
   const jsonLd = {
@@ -91,9 +107,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
-        <Header categories={categories} />
-        <main>{children}</main>
-        <Footer />
+        <CartProvider initialCart={initialCart}>
+          <Header categories={categories} />
+          <main>{children}</main>
+          <Footer />
+          <CartDrawer />
+        </CartProvider>
       </body>
     </html>
   );

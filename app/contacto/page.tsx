@@ -7,6 +7,7 @@ import { siteConfig } from "@/data/site-config";
 export const metadata: Metadata = {
   title: "Contacto",
   description: "Escríbenos, te respondemos directamente y a la brevedad.",
+  alternates: { canonical: "/contacto" },
 };
 
 export default function ContactoPage() {

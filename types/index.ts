@@ -4,7 +4,11 @@
 
 export interface Money {
   amount: number;
-  currency: "USD" | "MXN" | "EUR" | "COP" | "ARS";
+  // "CLP" faltaba en esta unión aunque la tienda opera 100% en pesos
+  // chilenos — el código funcionaba igual porque `toMoney()` en
+  // shopify-provider.ts hace un cast forzado, pero el tipo no reflejaba
+  // la realidad. Se agrega para que TypeScript detecte errores reales.
+  currency: "USD" | "MXN" | "EUR" | "COP" | "ARS" | "CLP";
 }
 
 export interface ProductBadge {

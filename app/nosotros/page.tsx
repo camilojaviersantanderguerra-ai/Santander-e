@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: "Nuestra historia",
   description:
     "Por qué existe Santander E-Shopping: variedad real, precios justos y atención de persona a persona.",
+  alternates: { canonical: "/nosotros" },
 };
 
 const pillars = [

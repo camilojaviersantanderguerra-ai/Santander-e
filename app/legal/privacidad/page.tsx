@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: "Política de privacidad",
   description:
     "Cómo recopilamos, usamos y protegemos tus datos personales en Santander E-Shopping.",
+  alternates: { canonical: "/legal/privacidad" },
 };
 
 const sections = [

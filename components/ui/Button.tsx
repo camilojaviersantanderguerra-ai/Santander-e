@@ -57,8 +57,12 @@ export function Button({
   const classes = cn(base, sizes[size], variants[variant], className);
 
   if (href) {
+    // Antes no se reenviaba `onClick` a `Link` cuando se pasaba `href` —
+    // cualquier botón que necesitara cerrar un modal/drawer Y navegar a la
+    // vez (ej. "Ver la colección" dentro del carrito) simplemente no
+    // ejecutaba ese onClick. Ahora sí se reenvía.
     return (
-      <Link href={href} className={classes}>
+      <Link href={href} onClick={onClick} className={classes}>
         {content}
       </Link>
     );

@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: "Términos de servicio",
   description:
     "Condiciones de uso y compra en Santander E-Shopping: precios, pagos, envíos, devoluciones y responsabilidades.",
+  alternates: { canonical: "/legal/terminos" },
 };
 
 const sections = [

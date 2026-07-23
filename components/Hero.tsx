@@ -80,7 +80,10 @@ export function Hero() {
           <Button href="/tienda" size="lg" showArrow>
             {siteConfig.hero.ctaPrimary}
           </Button>
-          <Button href="#historia" size="lg" variant="secondary">
+          {/* Antes apuntaba a "#historia", un ancla que no existe en ninguna
+              parte de la página — el botón no hacía nada. Ahora va a la
+              página real "Nuestra historia" (/nosotros). */}
+          <Button href="/nosotros" size="lg" variant="secondary">
             {siteConfig.hero.ctaSecondary}
           </Button>
         </motion.div>

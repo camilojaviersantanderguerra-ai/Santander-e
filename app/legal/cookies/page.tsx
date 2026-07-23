@@ -5,6 +5,7 @@ import { siteConfig } from "@/data/site-config";
 export const metadata: Metadata = {
   title: "Política de cookies",
   description: "Qué cookies utiliza Santander E-Shopping y cómo puedes gestionarlas.",
+  alternates: { canonical: "/legal/cookies" },
 };
 
 const sections = [

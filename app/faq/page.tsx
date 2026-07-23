@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: "Preguntas frecuentes",
   description:
     "Respuestas rápidas sobre envíos, pagos, devoluciones y garantía en Santander E-Shopping.",
+  alternates: { canonical: "/faq" },
 };
 
 const faqs = [

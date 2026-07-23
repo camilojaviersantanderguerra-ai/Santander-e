@@ -16,7 +16,8 @@ interface ProductCardProps {
  * micro-badges de escasez/prueba social sin sobrecargar el diseño. */
 export function ProductCard({ product, index = 0 }: ProductCardProps) {
   const discount = discountPercent(product.price, product.compareAtPrice);
-  const lowStock = (product.stockLevel ?? 99) <= 8;
+  const outOfStock = product.stockLevel === 0;
+  const lowStock = !outOfStock && (product.stockLevel ?? 99) > 0 && (product.stockLevel ?? 99) <= 8;
 
   return (
     <motion.a
@@ -25,8 +26,10 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-60px" }}
       transition={{ duration: 0.7, delay: index * 0.08, ease: [0.16, 1, 0.3, 1] }}
-      whileHover={{ y: -8 }}
-      className="group relative flex flex-col overflow-hidden rounded-2xl border border-white/[0.06] bg-ink-850/60 shadow-card transition-colors duration-500 hover:border-bronze-400/30"
+      whileHover={{ y: outOfStock ? 0 : -8 }}
+      className={`group relative flex flex-col overflow-hidden rounded-2xl border border-white/[0.06] bg-ink-850/60 shadow-card transition-colors duration-500 ${
+        outOfStock ? "opacity-60" : "hover:border-bronze-400/30"
+      }`}
     >
       <div className="relative aspect-[4/5] overflow-hidden bg-ink-800">
         <Image
@@ -34,17 +37,20 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
           alt={product.name}
           fill
           sizes="(max-width: 768px) 90vw, (max-width: 1200px) 40vw, 25vw"
-          className="object-cover transition-transform duration-[1200ms] ease-premium group-hover:scale-[1.06]"
+          className={`object-cover transition-transform duration-[1200ms] ease-premium ${
+            outOfStock ? "grayscale" : "group-hover:scale-[1.06]"
+          }`}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-ink-950/70 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
         <div className="absolute left-3 top-3 flex flex-col gap-2">
+          {outOfStock && <Badge tone="outline">Agotado</Badge>}
           {product.badges?.map((b) => (
             <Badge key={b.label} tone={b.tone}>
               {b.label}
             </Badge>
           ))}
-          {discount && (
+          {!outOfStock && discount && (
             <Badge tone="bronze">-{discount}%</Badge>
           )}
         </div>
