@@ -91,9 +91,21 @@ export default async function ProductPage({ params }: ProductPageProps) {
             )}
           </div>
 
-          <p className="mt-6 max-w-md text-base leading-relaxed text-white/55">
-            {product.description || product.shortDescription}
-          </p>
+          {product.descriptionHtml ? (
+            // Se usa descriptionHtml (con <p>/<ul>) en vez del texto plano
+            // de Shopify, que juntaba las viñetas de la descripción en una
+            // sola oración corrida sin puntuación. El contenido viene del
+            // panel de Shopify de esta misma tienda (no de un tercero), por
+            // eso renderizarlo como HTML es seguro.
+            <div
+              className="prose-product mt-6 max-w-md text-base leading-relaxed text-white/55 [&_ul]:mt-3 [&_ul]:list-disc [&_ul]:space-y-1.5 [&_ul]:pl-5 [&_li]:marker:text-bronze-400 [&_p]:mt-3 [&_p:first-child]:mt-0"
+              dangerouslySetInnerHTML={{ __html: product.descriptionHtml }}
+            />
+          ) : (
+            <p className="mt-6 max-w-md text-base leading-relaxed text-white/55">
+              {product.description || product.shortDescription}
+            </p>
+          )}
 
           <div className="mt-10">
             <BuyNowButton
